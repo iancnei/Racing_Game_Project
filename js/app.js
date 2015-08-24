@@ -20,8 +20,8 @@ function Game(playerAmount)
   Game.prototype.init = function()
   {    
     canvasElement.appendTo('#game-board');
-    player1 = new Player($('#p1-name').val(), $('#p1-color').val(), 10, 10, 32, 32, "dash");
-    player2 = new Player($('#p2-name').val(), $('#p2-color').val(), 10, 40, 32, 32, "dash");
+    player1 = new Player(($('#p1-name').val() ? $('#p1-name').val() : "Player 1"), ($('#p1-color').val() ? $('#p1-color').val() : "blue"), 10, 10, 32, 32, "dash");
+    player2 = new Player(($('#p2-name').val() ? $('#p2-name').val() : "Player 2"), ($('#p2-color').val() ? $('#p2-color').val() : "green"), 10, 40, 32, 32, "dash");
     finishLine = new FinishLine("red", CANVAS_WIDTH - 30, 0, 15, CANVAS_HEIGHT);
     ui = new UI();
   }

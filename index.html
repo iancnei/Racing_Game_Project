@@ -1,19 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Rrrracing Game</title>
+  <title>Racing Game</title>
   <meta charset="utf-8" />
   <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" type="text/css" href="main.css">
-  <!-- Hey, where's the jquery? -->
-  <script type="text/javascript" src="app.js"></script>
+  <link rel="stylesheet" type="text/css" href="css/main.css">
+  <script type="text/javascript" src="js/jquery-1.11.3.js"></script>
+  <script type="text/javascript" src="js/underscore.js"></script>
+  <script type="text/javascript" src="js/jquery.hotkeys-0.7.9.js"></script>
+  <script type="text/javascript" src="js/key_status.js"></script>
+  <script type="text/javascript" src="js/app.js"></script>
 </head>
 <body>
   <!-- HTML Body -->
-  <h1>Rrrracing Game</h1>
-  <img src="http://www.cs.utah.edu/~gk/atwork/img/hevequip2.gif" alt="under construction"></img>
+  <h1 id="game-title">Racing Game</h1>
+  <div id="pregame">
+    <div id="instruction-text">Please Enter Your Name and Color:</div></br>
+    <div id="p1-input">
+      <input id="p1-name" type="text" value="Player 1">
+      <input id="p1-color" type="text" value="blue">
+    </div>
+    <div id="p2-input">
+      <input id="p2-name" type="text" value="Player 2">
+      <input id="p2-color" type="text" value="green">
+    </div>
+    </br></br>
+    <div id="start-button"><button type="button">Start Game</button></div>
+  </div>
   <!-- Game Board Here -->
+  <div id="game-board"></div>
+  <div id="instructions">
+    <h2>Instructions</h2>
+    <p>Player 1: press "A", "S", and/or "D" to move your player across the game board.</br>
+      Player2: press "J", "K", and/or "L" to move your player across the game board.</br>
+    </p>
+  </div>
   <!-- Reset button -->
 </body>
 </html>

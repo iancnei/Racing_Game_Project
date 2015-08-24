@@ -4,11 +4,12 @@ var player2;
 var finishLine;
 var ui;
 
-var CANVAS_WIDTH = window.innerWidth - window.innerWidth/100;
+var CANVAS_WIDTH = window.innerWidth - window.innerWidth/50;
 var CANVAS_HEIGHT = window.innerHeight/2;
 var canvasElement = $("<canvas width='" + CANVAS_WIDTH + 
                         "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvas = canvasElement.get(0).getContext("2d");
+var startTime;
 
 function Game(playerAmount)
 {
@@ -16,59 +17,64 @@ function Game(playerAmount)
   this.hasWon = false;
   this.FPS = 60;
   this.winner;
+  
+  this.endTime;
+  this.totalTime;
+  this.timerStarted = false;
+  this.timerID;
 
   Game.prototype.init = function()
   {    
     canvasElement.appendTo('#game-board');
-    player1 = new Player(($('#p1-name').val() ? $('#p1-name').val() : "Player 1"), ($('#p1-color').val() ? $('#p1-color').val() : "blue"), 10, 10, 32, 32, "dash");
-    player2 = new Player(($('#p2-name').val() ? $('#p2-name').val() : "Player 2"), ($('#p2-color').val() ? $('#p2-color').val() : "green"), 10, 40, 32, 32, "dash");
+    player1 = new Player(($('#p1-name').val() ? $('#p1-name').val() : "Player 1"), ($('#p1-color').val() ? $('#p1-color').val() : "blue"), 10, CANVAS_HEIGHT / 10, CANVAS_WIDTH / 25, CANVAS_WIDTH / 25, "dash");
+    player2 = new Player(($('#p2-name').val() ? $('#p2-name').val() : "Player 2"), ($('#p2-color').val() ? $('#p2-color').val() : "green"), 10, CANVAS_HEIGHT * 7 / 10, CANVAS_WIDTH / 25, CANVAS_WIDTH / 25, "dash");
     finishLine = new FinishLine("red", CANVAS_WIDTH - 30, 0, 15, CANVAS_HEIGHT);
     ui = new UI();
   }
 
   Game.prototype.update = function()
   { 
-    setInterval(function() {
-      if (this.winner === undefined)
-      {
+    /*this.endTime = new Date();
+    this.totalTime = Math.abs(this.endTime.getSeconds() - startTime.getSeconds());*/
+
+    setInterval(function()
+    {
         //console.log('can move');  
-        if (player1 !== undefined && player2 !== undefined && finishLine !== undefined)
+      if (player1 !== undefined && player2 !== undefined && finishLine !== undefined)
+      {
+        if (keydown.a || keydown.s || keydown.d) {
+            player1.move();
+        }
+
+        player1.x = player1.x.clamp(0, CANVAS_WIDTH - player1.width);
+
+        if (keydown.j || keydown.k || keydown.l) {
+            player2.move();
+        }
+
+        player2.x = player2.x.clamp(0, CANVAS_WIDTH - player2.width) 
+
+        if (collides(player1, finishLine))
         {
-          if (keydown.a || keydown.s || keydown.d) {
-              player1.move();
-          }
-
-          player1.x = player1.x.clamp(0, CANVAS_WIDTH - player1.width);
-
-          if (keydown.j || keydown.k || keydown.l) {
-              player2.move();
-          }
-
-          player2.x = player2.x.clamp(0, CANVAS_WIDTH - player2.width) 
-
-          if (collides(player1, finishLine))
-          {
-            finishLine.handleCollision(player1);
-          }
-          else if (collides(player2, finishLine))
-          {
-            finishLine.handleCollision(player2);
-          }
+          finishLine.handleCollision(player1);
+        }
+        else if (collides(player2, finishLine))
+        {
+          finishLine.handleCollision(player2);
         }
       }
+      
 
       //this.draw();
-      if (this.canvas !== undefined)
+      canvas.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      if (player1 !== undefined && player2 !== undefined && finishLine !== undefined)
       {
-        canvas.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        if (player1 !== undefined && player2 !== undefined && finishLine !== undefined)
-        {
-          player1.draw();
-          player2.draw();
-          finishLine.draw();
-          ui.draw();
-        }
+        player1.draw();
+        player2.draw();
+        finishLine.draw();
+        ui.draw();
       }
+      
     },
     1000/this.FPS);
   }
@@ -78,6 +84,7 @@ function Game(playerAmount)
     //console.log("has won");
     this.hasWon = true;
     this.winner = player.name;
+    this.timerStarted = false;
   }
 }
 
@@ -93,8 +100,11 @@ function Player(name, color, x, y, width, height, type)
   this.cooldown = 0;
   Player.prototype.draw = function()
   {
+    canvas.font = "18px sans-serif"
+    canvas.textAlign = "start";
     canvas.fillStyle = this.color;
     canvas.fillRect(this.x, this.y, this.width, this.height);
+    canvas.fillText(this.name, this.x, this.y - this.height/6);
   }
   Player.prototype.move = function()
   {
@@ -156,6 +166,7 @@ function UI()
       canvas.font = "48px serif"
       canvas.textAlign = "center";
       canvas.fillStyle = "#000";
+      //canvas.fillText(game.winner + " Wins!\nTime: " + game.totalTime + " seconds.", CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
       canvas.fillText(game.winner + " Wins!", CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
     }
   }
@@ -176,10 +187,22 @@ $(document).ready(function()
   {
     $('#start-button').on('click', function()
       {
+        //startTime = new Date();
         game = new Game(2);
         game.init();
         game.update();
-        $('#pregame').empty();
+        $('#pregame').css("visibility", "hidden");
+      }
+    );
+
+    $('#reset-button').on('click', function handleClick(event)
+      {
+        $('#pregame').css("visibility", "visible");
+        $('#game-board').empty();
+        $('#p1-name').val("");
+        $('#p1-color').val("");
+        $('#p2-name').val("");
+        $('#p2-color').val("");
       }
     );
   }

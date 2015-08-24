@@ -29,3 +29,7 @@
 #reset-button{
 	margin-left: 30%;
 }
+
+#game-board{
+	float: center;
+}

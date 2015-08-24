@@ -6,30 +6,33 @@ var ui;
 
 var CANVAS_WIDTH = window.innerWidth - window.innerWidth/50;
 var CANVAS_HEIGHT = window.innerHeight/2;
+/*var CANVAS_WIDTH = ( (1024 < window.innerWidth - window.innerWidth/50) ? 1024 : window.innerWidth - window.innerWidth/50 );
+var CANVAS_HEIGHT = ( (384 < window.innerHeight/2) ? 384 : window.innerHeight/2);*/
 var canvasElement = $("<canvas width='" + CANVAS_WIDTH + 
                         "' height='" + CANVAS_HEIGHT + "'></canvas>");
 var canvas = canvasElement.get(0).getContext("2d");
-var startTime;
+//var startTime;
 
 function Game(playerAmount)
 {
   this.playerAmount = playerAmount;
-  this.hasWon = false;
-  this.FPS = 60;
+  this.hasWon;
+  this.FPS = 30;
   this.winner;
   
-  this.endTime;
+  /*this.endTime;
   this.totalTime;
   this.timerStarted = false;
-  this.timerID;
+  this.timerID;*/
 
   Game.prototype.init = function()
   {    
+    this.hasWon = false;
     canvasElement.appendTo('#game-board');
-    player1 = new Player(($('#p1-name').val() ? $('#p1-name').val() : "Player 1"), ($('#p1-color').val() ? $('#p1-color').val() : "blue"), 10, CANVAS_HEIGHT / 10, CANVAS_WIDTH / 25, CANVAS_WIDTH / 25, "dash");
-    player2 = new Player(($('#p2-name').val() ? $('#p2-name').val() : "Player 2"), ($('#p2-color').val() ? $('#p2-color').val() : "green"), 10, CANVAS_HEIGHT * 7 / 10, CANVAS_WIDTH / 25, CANVAS_WIDTH / 25, "dash");
+    player1 = new Player(($('#p1-name').val() ? $('#p1-name').val() : "Player 1"), ($('#p1-color').val() ? $('#p1-color').val() : "blue"), 10, CANVAS_HEIGHT / 10, CANVAS_WIDTH / 25, CANVAS_WIDTH / 25, "dash", this.FPS);
+    player2 = new Player(($('#p2-name').val() ? $('#p2-name').val() : "Player 2"), ($('#p2-color').val() ? $('#p2-color').val() : "green"), 10, CANVAS_HEIGHT * 7 / 10, CANVAS_WIDTH / 25, CANVAS_WIDTH / 25, "dash", this.FPS);
     finishLine = new FinishLine("red", CANVAS_WIDTH - 30, 0, 15, CANVAS_HEIGHT);
-    ui = new UI();
+    ui = new UI(false, this.FPS, 3);
   }
 
   Game.prototype.update = function()
@@ -40,7 +43,7 @@ function Game(playerAmount)
     setInterval(function()
     {
         //console.log('can move');  
-      if (player1 !== undefined && player2 !== undefined && finishLine !== undefined)
+      if (player1 !== undefined && player2 !== undefined && finishLine !== undefined && ui.started)
       {
         if (keydown.a || keydown.s || keydown.d) {
             player1.move();
@@ -69,10 +72,14 @@ function Game(playerAmount)
       canvas.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       if (player1 !== undefined && player2 !== undefined && finishLine !== undefined)
       {
+        ui.draw();
         player1.draw();
         player2.draw();
         finishLine.draw();
-        ui.draw();
+        if (!ui.started)      
+        {
+          ui.drawStart();
+        }
       }
       
     },
@@ -88,7 +95,7 @@ function Game(playerAmount)
   }
 }
 
-function Player(name, color, x, y, width, height, type)
+function Player(name, color, x, y, width, height, type, timerCooldown)
 {
   this.name = name;
   this.color = color;
@@ -98,12 +105,14 @@ function Player(name, color, x, y, width, height, type)
   this.height = height;
   this.type = type;
   this.cooldown = 0;
+  //this.sprite = sprite("player");
   Player.prototype.draw = function()
   {
     canvas.font = "18px sans-serif"
     canvas.textAlign = "start";
     canvas.fillStyle = this.color;
     canvas.fillRect(this.x, this.y, this.width, this.height);
+    //this.sprite.draw(canvas, this.x, this.y);
     canvas.fillText(this.name, this.x, this.y - this.height/6);
   }
   Player.prototype.move = function()
@@ -115,7 +124,7 @@ function Player(name, color, x, y, width, height, type)
         if (this.type === "dash")
         {
           this.x += CANVAS_WIDTH/75;
-          this.cooldown = 10;
+          this.cooldown = timerCooldown / 10;
         }
         else if (this.type === "step")
         {
@@ -153,14 +162,46 @@ function FinishLine(color, x, y, width, height)
   }
 }
 
-function UI()
+function UI(started, countdown, number)
 {
+  this.started = started;
+  this.countdown = countdown;
+  this.number = number;
+  this.initial = countdown;
+  this.sprite = Sprite("bg00_port_night.jpg");
+  UI.prototype.drawStart = function()
+  {
+    if(this.countdown > 0)
+    {
+      canvas.font = "48px serif"
+      canvas.textAlign = "center";
+      canvas.fillStyle = "#000";
+      canvas.fillText(this.number, CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+      this.countdown -= 1;
+    }
+    else
+    {
+      this.countdown = this.initial;
+      if (this.number > 1)
+      {
+        this.number -= 1;
+      }
+      else if (this.number === 1)
+      {
+        this.number = "Start!";
+      }
+      else if (this.number === "Start!")
+      {
+        this.started = true;
+      }
+    }
+  }
   UI.prototype.draw = function()
   {
     // draw an outline of the race track
     canvas.strokeStyle = "#000"
     canvas.strokeRect(2, 0, CANVAS_WIDTH - 3, CANVAS_HEIGHT - 1);
-
+    //this.sprite.draw(canvas, 0, 0);
     if(game.hasWon)
     {
       canvas.font = "48px serif"
